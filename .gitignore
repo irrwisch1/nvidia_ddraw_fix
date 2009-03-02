@@ -1,0 +1,12 @@
+*.vcproj*
+CMakeFiles/
+*.dir/
+Debug/
+Release/
+cmake_install.cmake
+*.swp
+*.ncb
+*.suo
+*.sln
+CMakeCache.txt
+config.h
