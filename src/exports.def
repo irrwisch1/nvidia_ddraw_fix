@@ -1,0 +1,4 @@
+LIBRARY	"bgddf"
+EXPORTS
+
+DirectDrawCreate=FakeDirectDrawCreate
