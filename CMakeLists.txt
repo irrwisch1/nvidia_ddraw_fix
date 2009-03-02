@@ -36,7 +36,7 @@ ENDIF(MSVC AND NOT CMAKE_BUILD_TOOL MATCHES "nmake")
 
 # MinGW specific
 IF(CMAKE_COMPILER_IS_MINGW)
-	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--enable-auto-image-base,--enable-runtime-pseudo-reloc,--add-stdcall-alias,--output-def,out.def")
+	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--enable-auto-image-base,--enable-runtime-pseudo-reloc,--add-stdcall-alias,--output-def,${LIBRARY_OUTPUT_PATH}/out.def")
 ENDIF(CMAKE_COMPILER_IS_MINGW)
 
 # increase warning level

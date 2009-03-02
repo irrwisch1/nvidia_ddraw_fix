@@ -80,14 +80,14 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 
 		if ( traits::surf_guid == riid ) {
 			*obp = this;
-			AddRef();
+			refcounted_wrapper<T>::AddRef();
 			return DD_OK;
 		}
 		else if ( riid == IID_IDirectDrawSurface ) {
 			LOG_STDERR("requesting ddraw 1")
 			return create_interface<IDirectDrawSurface>(obp);
 		}
-		else if ( riid == IID_IDirectDraw4 ) { 
+		else if ( riid == IID_IDirectDraw4 ) {
 			LOG_STDERR("requesting ddraw 4")
 			return create_interface<IDirectDrawSurface4>(obp);
 		}
@@ -194,17 +194,17 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 		FNTRACE
 
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(src_surf) )
-			return m_real->BltFast(x, y, surf->m_real, src_rect, trans);
+			return refcounted_wrapper<T>::m_real->BltFast(x, y, surf->m_real, src_rect, trans);
 		else
-			return m_real->BltFast(x, y, src_surf, src_rect, trans);
+			return refcounted_wrapper<T>::m_real->BltFast(x, y, src_surf, src_rect, trans);
 	}
 
 	virtual HRESULT WINAPI DeleteAttachedSurface(DWORD a, typename traits::surface_ptr b)
 	{
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(b) )
-			return m_real->DeleteAttachedSurface(a, surf->m_real);
+			return refcounted_wrapper<T>::m_real->DeleteAttachedSurface(a, surf->m_real);
 		else
-			return m_real->DeleteAttachedSurface(a, b);
+			return refcounted_wrapper<T>::m_real->DeleteAttachedSurface(a, b);
 	}
 
 	virtual HRESULT WINAPI EnumAttachedSurfaces(LPVOID a, typename traits::enum_surf_cb_ptr b)
@@ -217,15 +217,15 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{
 		FNTRACE
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(a) )
-			return m_real->Flip(surf->m_real, b);
+			return refcounted_wrapper<T>::m_real->Flip(surf->m_real, b);
 		else
-			return m_real->Flip(a, b);
+			return refcounted_wrapper<T>::m_real->Flip(a, b);
 	}
 
 	virtual HRESULT WINAPI GetAttachedSurface(typename traits::caps_ptr a, typename traits::surface_ptr * b)
 	{
 		FNTRACE
-		HRESULT res = m_real->GetAttachedSurface(a, b);
+		HRESULT res = refcounted_wrapper<T>::m_real->GetAttachedSurface(a, b);
 		// It's important that we return a pointer to a wrapped COM object here,
 		// so we need to wrap the original object in our wrapped COM object
 		// This is the only place we need the type U of the derived class
@@ -297,9 +297,9 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{
 		FNTRACE
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(b) )
-			return m_real->UpdateOverlay(a, surf->m_real, c, d, e);
+			return refcounted_wrapper<T>::m_real->UpdateOverlay(a, surf->m_real, c, d, e);
 		else
-			return m_real->UpdateOverlay(a, b, c, d, e);
+			return refcounted_wrapper<T>::m_real->UpdateOverlay(a, b, c, d, e);
 	}
 
 	virtual HRESULT WINAPI UpdateOverlayDisplay(DWORD a)
@@ -309,9 +309,9 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{
 		FNTRACE
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(b) )
-			return m_real->UpdateOverlayZOrder(a, surf->m_real);
+			return refcounted_wrapper<T>::m_real->UpdateOverlayZOrder(a, surf->m_real);
 		else
-			return m_real->UpdateOverlayZOrder(a, b);
+			return refcounted_wrapper<T>::m_real->UpdateOverlayZOrder(a, b);
 	}
 
 	private:
@@ -319,7 +319,7 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 		HRESULT WINAPI create_interface(LPVOID* obp)
 		{
 			typedef typename ddraw_traits_selector<Interface>::traits q_traits;
-			HRESULT hr = m_real->QueryInterface( q_traits::surf_guid, obp );
+			HRESULT hr = refcounted_wrapper<T>::m_real->QueryInterface( q_traits::surf_guid, obp );
 
 			if ( *obp == NULL ) {
 				LOG_STDERR("could not retrieve ddraw surface interface");
@@ -340,31 +340,31 @@ struct fake_ddraw4_surf_base : public fake_ddraw_surf_base<T,U> {
 		: fake_ddraw_surf_base<T, U>(real) {}
 
 	virtual HRESULT WINAPI GetDDInterface(LPVOID* a)
-	{ /* FIXME??? */ FNTRACE; return m_real->GetDDInterface(a); }
+	{ /* FIXME??? */ FNTRACE; return refcounted_wrapper<T>::m_real->GetDDInterface(a); }
 
     virtual HRESULT WINAPI PageLock(DWORD a)
-	{ FNTRACE; return m_real->PageLock(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->PageLock(a); }
 
     virtual HRESULT WINAPI PageUnlock(DWORD a)
-	{ FNTRACE; return m_real->PageUnlock(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->PageUnlock(a); }
 
     virtual HRESULT WINAPI SetSurfaceDesc(LPDDSURFACEDESC2 a, DWORD b)
-	{ FNTRACE; return m_real->SetSurfaceDesc(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->SetSurfaceDesc(a, b); }
 
     virtual HRESULT WINAPI SetPrivateData (REFGUID a, LPVOID b, DWORD c, DWORD d)
-	{ FNTRACE; return m_real->SetPrivateData(a, b, c, d); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->SetPrivateData(a, b, c, d); }
 
 	virtual HRESULT WINAPI GetPrivateData (REFGUID a, LPVOID b, LPDWORD c)
-	{ FNTRACE; return m_real->GetPrivateData(a, b, c); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetPrivateData(a, b, c); }
 
     virtual HRESULT WINAPI FreePrivateData(REFGUID a)
-	{ FNTRACE; return m_real->FreePrivateData(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->FreePrivateData(a); }
 
     virtual HRESULT WINAPI GetUniquenessValue(LPDWORD a)
-	{ FNTRACE; return m_real->GetUniquenessValue(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetUniquenessValue(a); }
 
     virtual HRESULT WINAPI ChangeUniquenessValue()
-	{ FNTRACE; return m_real->ChangeUniquenessValue(); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->ChangeUniquenessValue(); }
 };
 
 /*! concrete IDirectDrawSurface implementation */

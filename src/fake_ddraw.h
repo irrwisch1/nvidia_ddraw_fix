@@ -31,22 +31,6 @@ struct fake_ddraw2;
 struct fake_ddraw4;
 struct fake_ddraw7;
 
-#define DO_STRINGIZE(X) #X
-#define STRINGIZE(X) DO_STRINGIZE(X)
-
-// some macro magic to safe some repetetive typing
-#define QUERY_INTERFACE_IMPL(NUM) \
-	LOG_STDERR("requesting ddraw" STRINGIZE(NUM) ) \
-	HRESULT hr = m_real->QueryInterface( IID_IDirectDraw##NUM, obp ); \
-	\
-	if ( *obp == NULL ) { \
-		LOG_STDERR("could not retrieve ddraw " STRINGIZE(NUM) "interface"); \
-		return hr; \
-	} \
-	\
-	*obp = new fake_ddraw##NUM( static_cast<IDirectDraw##NUM*>(*obp) ); \
-	return DD_OK; \
-
 /*! base template for all direct draw interfaces (1, 2, 4, 7)
     implements everything thats the same or similar between the
 	different DDraw versions
@@ -67,7 +51,7 @@ struct fake_ddraw_base : public refcounted_wrapper<T> {
 
 		if ( traits::guid == riid ) {
 			*obp = this;
-			AddRef();
+			refcounted_wrapper<T>::AddRef();
 			return DD_OK;
 		}
 		else if ( riid == IID_IDirectDraw ) {
@@ -78,7 +62,7 @@ struct fake_ddraw_base : public refcounted_wrapper<T> {
 			LOG_STDERR("requesting ddraw 2")
 			return create_interface<IDirectDraw2>(obp);
 		}
-		else if ( riid == IID_IDirectDraw4 ) { 
+		else if ( riid == IID_IDirectDraw4 ) {
 			LOG_STDERR("requesting ddraw 4")
 			return create_interface<IDirectDraw4>(obp);
 		}
@@ -167,7 +151,7 @@ struct fake_ddraw_base : public refcounted_wrapper<T> {
 		HRESULT WINAPI create_interface(LPVOID* obp)
 		{
 			typedef typename ddraw_traits_selector<Interface>::traits q_traits;
-			HRESULT hr = m_real->QueryInterface( q_traits::guid, obp );
+			HRESULT hr = refcounted_wrapper<T>::m_real->QueryInterface( q_traits::guid, obp );
 
 			if ( *obp == NULL ) {
 				LOG_STDERR("could not retrieve ddraw interface");
@@ -188,10 +172,10 @@ struct fake_ddraw2_base : public fake_ddraw_base<T> {
 		: fake_ddraw_base<T>(real) {}
 
 	virtual HRESULT WINAPI SetDisplayMode(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e)
-	{ FNTRACE; return m_real->SetDisplayMode(a, b, c, d, e); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->SetDisplayMode(a, b, c, d, e); }
 
 	virtual HRESULT WINAPI GetAvailableVidMem(typename traits::caps_ptr a, LPDWORD b, LPDWORD c)
-	{ FNTRACE; return m_real->GetAvailableVidMem(a, b, c); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetAvailableVidMem(a, b, c); }
 };
 
 /*! base for all direct draw interfaces >= 4 */
@@ -203,16 +187,16 @@ struct fake_ddraw4_base : public fake_ddraw2_base<T> {
 		: fake_ddraw2_base<T>(real) {}
 
 	virtual HRESULT WINAPI GetSurfaceFromDC(HDC a, typename traits::surface_ptr* b)
-	{ FNTRACE; return m_real->GetSurfaceFromDC(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetSurfaceFromDC(a, b); }
 
     virtual HRESULT WINAPI RestoreAllSurfaces()
-	{ FNTRACE; return m_real->RestoreAllSurfaces(); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->RestoreAllSurfaces(); }
 
     virtual HRESULT WINAPI TestCooperativeLevel()
-	{ FNTRACE; return m_real->TestCooperativeLevel(); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->TestCooperativeLevel(); }
 
 	virtual HRESULT WINAPI GetDeviceIdentifier(typename traits::device_identifier_ptr a, DWORD b)
-	{ FNTRACE; return m_real->GetDeviceIdentifier(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetDeviceIdentifier(a, b); }
 };
 
 /*! concrete implementation for IDirectDraw interface */
