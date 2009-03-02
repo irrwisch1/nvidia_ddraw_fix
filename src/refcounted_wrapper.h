@@ -28,9 +28,9 @@ struct refcounted_wrapper : public T {
 	explicit refcounted_wrapper(T* real)
 		: m_real(real), m_refs(1) {}
 
-	virtual ~refcounted_wrapper() = 0 {}
+	virtual ~refcounted_wrapper() = 0;
 
-	virtual ULONG WINAPI AddRef()	
+	virtual ULONG WINAPI AddRef()
 	{
 		return ++m_refs;
 	}
@@ -52,5 +52,8 @@ struct refcounted_wrapper : public T {
 	private:
 		ULONG m_refs;
 };
+
+template<typename T>
+refcounted_wrapper<T>::~refcounted_wrapper<T>() {}
 
 #endif

@@ -53,25 +53,25 @@ template<typename T>
 struct fake_ddraw_base : public refcounted_wrapper<T> {
 	typedef ddraw_traits<T> traits;
 
-	explicit fake_ddraw_base(T* real) 
-		: refcounted_wrapper(real) {}
+	explicit fake_ddraw_base(T* real)
+		: refcounted_wrapper<T>(real) {}
 
-	virtual ~fake_ddraw_base() 
-	{ LOG_STDERR( typeid(this).name() << " deleted" ); }
+	virtual ~fake_ddraw_base()
+	{ LOG_STDERR( demangle(typeid(this).name()) << " deleted" ); }
 
-	virtual HRESULT WINAPI Compact() 
-	{ FNTRACE; return m_real->Compact(); }
+	virtual HRESULT WINAPI Compact()
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->Compact(); }
 
 	virtual HRESULT WINAPI CreateClipper(DWORD a, LPDIRECTDRAWCLIPPER* b, IUnknown* c)
-	{ FNTRACE; return m_real->CreateClipper(a, b, c); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->CreateClipper(a, b, c); }
 
 	virtual HRESULT WINAPI CreatePalette(DWORD a, LPPALETTEENTRY b, LPDIRECTDRAWPALETTE* c, IUnknown* d)
-	{ FNTRACE; return m_real->CreatePalette(a, b, c, d); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->CreatePalette(a, b, c, d); }
 
 	virtual HRESULT WINAPI CreateSurface(typename traits::surface_desc_ptr a, typename traits::surface_ptr* b, IUnknown* c)
 	{
 		FNTRACE
-		HRESULT hr = m_real->CreateSurface(a, b, c);
+		HRESULT hr = refcounted_wrapper<T>::m_real->CreateSurface(a, b, c);
 		if (FAILED(hr))
 			return hr;
 
@@ -81,58 +81,58 @@ struct fake_ddraw_base : public refcounted_wrapper<T> {
 	}
 
 	virtual HRESULT WINAPI DuplicateSurface(typename traits::surface_ptr a, typename traits::surface_ptr* b)
-	{ FNTRACE; return m_real->DuplicateSurface(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->DuplicateSurface(a, b); }
 
 	virtual HRESULT WINAPI EnumDisplayModes(DWORD a, typename traits::surface_desc_ptr b, LPVOID c, typename traits::enum_mode_cb_ptr d)
-	{ FNTRACE; return m_real->EnumDisplayModes(a, b, c, d); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->EnumDisplayModes(a, b, c, d); }
 
 	virtual HRESULT WINAPI EnumSurfaces(DWORD a, typename traits::surface_desc_ptr b, LPVOID c, typename traits::enum_surf_cb_ptr d)
-	{ FNTRACE; return m_real->EnumSurfaces(a, b, c, d); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->EnumSurfaces(a, b, c, d); }
 
 	virtual HRESULT WINAPI FlipToGDISurface()
-	{ FNTRACE; return m_real->FlipToGDISurface(); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->FlipToGDISurface(); }
 
 	virtual HRESULT WINAPI GetCaps(LPDDCAPS a, LPDDCAPS b)
-	{ FNTRACE; return m_real->GetCaps(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetCaps(a, b); }
 
 	virtual HRESULT WINAPI GetDisplayMode(typename traits::surface_desc_ptr a)
-	{ FNTRACE; return m_real->GetDisplayMode(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetDisplayMode(a); }
 
 	virtual HRESULT WINAPI GetFourCCCodes(LPDWORD a, LPDWORD b)
-	{ FNTRACE; return m_real->GetFourCCCodes(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetFourCCCodes(a, b); }
 
 	virtual HRESULT WINAPI GetGDISurface(typename traits::surface_ptr* a)
-	{ FNTRACE; return m_real->GetGDISurface(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetGDISurface(a); }
 
 	virtual HRESULT WINAPI GetMonitorFrequency(LPDWORD a)
-	{ FNTRACE; return m_real->GetMonitorFrequency(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetMonitorFrequency(a); }
 
 	virtual HRESULT WINAPI GetScanLine(LPDWORD a)
-	{ FNTRACE; return m_real->GetScanLine(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetScanLine(a); }
 
 	virtual HRESULT WINAPI GetVerticalBlankStatus(LPBOOL a)
-	{ FNTRACE; return m_real->GetVerticalBlankStatus(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetVerticalBlankStatus(a); }
 
 	virtual HRESULT WINAPI Initialize(GUID* a)
-	{ FNTRACE; return m_real->Initialize(a); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->Initialize(a); }
 
 	virtual HRESULT WINAPI RestoreDisplayMode()
-	{ FNTRACE; return m_real->RestoreDisplayMode(); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->RestoreDisplayMode(); }
 
 	virtual HRESULT WINAPI SetCooperativeLevel(HWND a, DWORD b)
-	{ 
+	{
 		FNTRACE
 		g_hwnd = a;
-		return m_real->SetCooperativeLevel(a, b);
+		return refcounted_wrapper<T>::m_real->SetCooperativeLevel(a, b);
 	}
 
 	virtual HRESULT WINAPI WaitForVerticalBlank(DWORD a, HANDLE b)
-	{ FNTRACE; return m_real->WaitForVerticalBlank(a, b); }
+	{ FNTRACE; return refcounted_wrapper<T>::m_real->WaitForVerticalBlank(a, b); }
 };
 
 struct fake_ddraw : public fake_ddraw_base<IDirectDraw> {
 	explicit fake_ddraw(IDirectDraw* real)
-		: fake_ddraw_base(real) {}
+		: fake_ddraw_base<IDirectDraw>(real) {}
 
 	virtual HRESULT WINAPI QueryInterface(REFIID a, LPVOID* b);
 
@@ -142,7 +142,7 @@ struct fake_ddraw : public fake_ddraw_base<IDirectDraw> {
 
 struct fake_ddraw2 : public fake_ddraw_base<IDirectDraw2> {
 	explicit fake_ddraw2(IDirectDraw2* real)
-		: fake_ddraw_base(real) {}
+		: fake_ddraw_base<IDirectDraw2>(real) {}
 
 	virtual HRESULT WINAPI QueryInterface(REFIID a, LPVOID* b);
 	virtual HRESULT WINAPI SetDisplayMode(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e)

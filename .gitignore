@@ -8,5 +8,7 @@ cmake_install.cmake
 *.ncb
 *.suo
 *.sln
+*.cbp
+Makefile
 CMakeCache.txt
 config.h

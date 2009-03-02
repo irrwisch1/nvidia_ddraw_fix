@@ -29,14 +29,13 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 # add the build type (Release/Debug) to the output path
 # this isn't required for MSVC as cmake does this automatically
 IF(MSVC AND NOT CMAKE_BUILD_TOOL MATCHES "nmake")
-	SET ( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
+	SET ( LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin )
 ELSE(MSVC AND NOT CMAKE_BUILD_TOOL MATCHES "nmake")
-	SET ( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE} )
+	SET ( LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE} )
 ENDIF(MSVC AND NOT CMAKE_BUILD_TOOL MATCHES "nmake")
 
 # MinGW specific
 IF(CMAKE_COMPILER_IS_MINGW)
-	#SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--enable-auto-image-base -Wl,--enable-runtime-pseudo-reloc -Wl,--output-def,out.def")
 	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--enable-auto-image-base,--enable-runtime-pseudo-reloc,--add-stdcall-alias,--output-def,out.def")
 ENDIF(CMAKE_COMPILER_IS_MINGW)
 
@@ -58,6 +57,12 @@ ENDIF(MSVC)
 
 INCLUDE (CheckIncludeFiles)
 CHECK_INCLUDE_FILES (stdint.h HAVE_STDINT_H)
+
+if (CMAKE_BUILD_TYPE MATCHES "Release")
+	ADD_DEFINITIONS(-D_NDEBUG)
+else (CMAKE_BUILD_TYPE MATCHES "Release")
+	ADD_DEFINITIONS(-D_DEBUG)
+endif (CMAKE_BUILD_TYPE MATCHES "Release")
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )

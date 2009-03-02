@@ -37,6 +37,14 @@ extern std::ofstream outstream;
 	stream << "-> " << __FUNCSIG__ << std::endl;
 */
 
-#define FNTRACE outstream << __FUNCSIG__ << std::endl;
+#if defined(__GNUC__)
+	#define FUNCTION_NAME __PRETTY_FUNCTION__
+#elif defined (_MSC_VER)
+	#define FUNCTION_NAME __FUNCSIG__
+#else
+	#define FUNCTION_NAME __FUNCTION__
+#endif
+
+#define FNTRACE outstream << FUNCTION_NAME << std::endl;
 //#define FNTRACE
 #endif

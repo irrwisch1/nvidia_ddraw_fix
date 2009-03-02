@@ -21,16 +21,20 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <string>
 
-/*! handle to the window of the game. will be initialized 
+/*! handle to the window of the game. will be initialized
     when fake_ddraw::SetCooperativeLevel os called the first time
 */
 extern HWND g_hwnd;
 
-/*! \brief shows a message box and quits the program 
-    \param message message 
+/*! \brief shows a message box and quits the program
+    \param message message
 	\param flags flags as in WinAPI's MessageBox function
 */
 extern void show_error_box(const char* message, uint32_t flags);
+
+/*! demangles a mangeled name */
+extern std::string demangle(const char* name);
 
 #endif

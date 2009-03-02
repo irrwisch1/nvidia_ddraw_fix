@@ -21,6 +21,11 @@
 #include <conio.h>
 #include <ddraw.h>
 #include <assert.h>
+
+#if defined(__GNUC__)
+	#include <cxxabi.h>
+#endif
+
 #include "trace.h"
 #include "fake_ddraw.h"
 
@@ -142,6 +147,29 @@ void show_error_box(const char* message, uint32_t flags)
 		ShowWindow( g_hwnd, SW_MINIMIZE );
 	MessageBoxA( NULL, message, "nVidia DirectDraw fix", flags);
 	exit(EXIT_FAILURE);
+}
+
+std::string demangle(const char* name)
+{
+	#if defined(__GNUC__)
+	size_t length;
+	int status;
+
+	// try to demangle the mangled function name. If this fails
+	// (status != 0) then we output the managled name (some names like
+	// C functions are not mangled at all)
+	char* demangled = abi::__cxa_demangle(name, NULL, &length, &status);
+
+	if (status != 0)
+		return name;
+	else {
+		std::string ret(demangled);
+		free(demangled);
+		return ret;
+	}
+	#else // MSVC doesn't mangle
+	return name;
+	#endif
 }
 
 //HRESULT WINAPI __declspec(dllexport) DirectDrawCreate(GUID* a, LPDIRECTDRAW* b, IUnknown* c) __attribute__ ((alias ("FakeDirectDrawCreate")));
