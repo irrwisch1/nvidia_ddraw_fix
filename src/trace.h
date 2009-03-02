@@ -24,27 +24,33 @@
 extern std::ofstream outstream;
 //#define outstream std::cout
 
-#define LOG_STDERR(X) std::cerr << X << std::endl;
-#define LOG_FILE(X) outstream << X << std::endl;
+#ifdef DEBUG
+	#define LOG_STDERR(X) std::cerr << X << std::endl;
+	#define LOG_FILE(X) outstream << X << std::endl;
 
-/*
-#define FNTRACE \
-	struct fntrace { \
-		fntrace(const char* fun) : fun(fun) {} \
-		~fntrace() { stream << "<- " << fun << std::endl; } \
-		const char* fun; \
-	} fntrace(__FUNCSIG__); \
-	stream << "-> " << __FUNCSIG__ << std::endl;
-*/
+	/*
+	#define FNTRACE \
+		struct fntrace { \
+			fntrace(const char* fun) : fun(fun) {} \
+			~fntrace() { stream << "<- " << fun << std::endl; } \
+			const char* fun; \
+		} fntrace(__FUNCSIG__); \
+		stream << "-> " << __FUNCSIG__ << std::endl;
+	*/
 
-#if defined(__GNUC__)
-	#define FUNCTION_NAME __PRETTY_FUNCTION__
-#elif defined (_MSC_VER)
-	#define FUNCTION_NAME __FUNCSIG__
+	#if defined(__GNUC__)
+		#define FUNCTION_NAME __PRETTY_FUNCTION__
+	#elif defined (_MSC_VER)
+		#define FUNCTION_NAME __FUNCSIG__
+	#else
+		#define FUNCTION_NAME __FUNCTION__
+	#endif
+
+	#define FNTRACE outstream << FUNCTION_NAME << std::endl;
 #else
-	#define FUNCTION_NAME __FUNCTION__
+	#define LOG_STDERR(X)
+	#define LOG_FILE(X)
+	#define FNTRACE
 #endif
 
-#define FNTRACE outstream << FUNCTION_NAME << std::endl;
-//#define FNTRACE
 #endif

@@ -23,10 +23,10 @@ include_directories ( ${include_directories}
 
 link_directories ( "$ENV{DXSDK_DIR}/Lib/x86" )
 
-add_library( bgddf SHARED 
+add_library( nvddf SHARED 
 	${SOURCES}
 	${HEADERS}
 	exports.def
 )
 
-target_link_libraries ( bgddf dxguid )
+target_link_libraries ( nvddf dxguid )

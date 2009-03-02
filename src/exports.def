@@ -1,4 +1,4 @@
-LIBRARY	"bgddf"
+LIBRARY	"nvddf"
 EXPORTS
 
 DirectDrawCreate=FakeDirectDrawCreate

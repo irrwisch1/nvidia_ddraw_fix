@@ -49,7 +49,7 @@ static void load_ddraw_dll()
 	RealDirectDrawCreate = (pDirectDrawCreate)GetProcAddress(ddraw_handle, "DirectDrawCreate");
 }
 
-#ifdef _DEBUG
+#ifdef DEBUG
 //! allocate a console window for debugging purposes
 static void alloc_console()
 {
@@ -66,7 +66,6 @@ static void alloc_console()
 	#endif
 }
 
-// little wrapper for FreeConsole that's put into atexit
 static void free_console()
 {
 	using namespace std;
@@ -90,14 +89,14 @@ extern "C" BOOL WINAPI DllMain(HANDLE /*handle*/, DWORD reason, LPVOID  /*reserv
 	switch ( reason ) {
 		case DLL_PROCESS_ATTACH:
 			load_ddraw_dll();
-			#ifdef _DEBUG
+			#ifdef DEBUG
 			alloc_console();
 			#endif
 			break;
 		case DLL_PROCESS_DETACH:
 			if ( ddraw )
 				ddraw->Release();
-			#ifdef _DEBUG
+			#ifdef DEBUG
 			free_console();
 			#endif
 			FreeLibrary(ddraw_handle);
@@ -171,5 +170,3 @@ std::string demangle(const char* name)
 	return name;
 	#endif
 }
-
-//HRESULT WINAPI __declspec(dllexport) DirectDrawCreate(GUID* a, LPDIRECTDRAW* b, IUnknown* c) __attribute__ ((alias ("FakeDirectDrawCreate")));

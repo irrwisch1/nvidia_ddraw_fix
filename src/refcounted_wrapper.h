@@ -54,6 +54,6 @@ struct refcounted_wrapper : public T {
 };
 
 template<typename T>
-refcounted_wrapper<T>::~refcounted_wrapper<T>() {}
+refcounted_wrapper<T>::~refcounted_wrapper() {}
 
 #endif
