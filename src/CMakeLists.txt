@@ -17,8 +17,11 @@
 FILE(GLOB HEADERS *.h)
 FILE(GLOB SOURCES *.cpp)
  
+# TODO: replace with proper FindDirectX.cmake or something
 include_directories ( ${include_directories}
     	"$ENV{DXSDK_DIR}/Include" )
+
+link_directories ( "$ENV{DXSDK_DIR}/Lib/x86" )
 
 add_library( bgddf SHARED 
 	${SOURCES}
@@ -26,3 +29,4 @@ add_library( bgddf SHARED
 	exports.def
 )
 
+target_link_libraries ( bgddf dxguid )
