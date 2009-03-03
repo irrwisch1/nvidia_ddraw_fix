@@ -23,6 +23,7 @@ include_directories ( ${include_directories}
 
 link_directories ( "$ENV{DXSDK_DIR}/Lib/x86" )
 
+add_subdirectory ( patcher )
 add_library( nvddf SHARED 
 	${SOURCES}
 	${HEADERS}
