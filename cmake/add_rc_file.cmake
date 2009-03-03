@@ -14,15 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-FILE(GLOB HEADERS *.h)
-FILE(GLOB SOURCES *.cpp)
- 
-add_rc_file (version_info ../version.rc )
+macro(ADD_RC_FILE _var _file)
+	#foreach(arg ${ARGV})
+		if(MINGW)
+			# resource compilation for mingw
+			ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file}.o
+				COMMAND ${WINDRES}
+				-i${_file}
+				-o ${CMAKE_CURRENT_BINARY_DIR}/${_file}.o)
+			SET(${_var} ${CMAKE_CURRENT_BINARY_DIR}/${_file}.o)
+		else(MINGW)
+			# the cmake msvc generator can deal with .rc files directly
+			SET(${_var} ${_file})
+		endif(MINGW)
+	#endforeach(arg)
+endmacro(ADD_RC_FILE)
 
-add_executable( nv_ddraw_fix
-	${version_info}
-	${SOURCES}
-	${HEADERS}
-)
-
-set_target_properties(nv_ddraw_fix PROPERTIES WIN32_EXECUTABLE TRUE)

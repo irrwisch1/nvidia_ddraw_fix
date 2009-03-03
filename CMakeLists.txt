@@ -26,6 +26,10 @@ IF (NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+if (NOT WINDRES)
+	set(WINDRES windres)
+endif (NOT WINDRES)
+
 # add the build type (Release/Debug) to the output path
 # this isn't required for MSVC as cmake does this automatically
 IF(MSVC AND NOT CMAKE_BUILD_TOOL MATCHES "nmake")
@@ -75,6 +79,7 @@ CHECK_INCLUDE_FILES (stdint.h HAVE_STDINT_H)
 CHECK_FUNCTION_EXISTS ( strncasecmp HAVE_STRNCASECMP )
 CHECK_FUNCTION_EXISTS ( strnicmp HAVE_STRNICMP )
 
+INCLUDE (cmake/add_rc_file.cmake)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 

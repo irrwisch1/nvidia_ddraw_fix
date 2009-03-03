@@ -23,11 +23,38 @@ include_directories ( ${include_directories}
 
 link_directories ( "$ENV{DXSDK_DIR}/Lib/x86" )
 
-add_subdirectory ( patcher )
+# the rc file must be added to the executable. It can't be added to static libs
+SET(win32_resource_obj "")
+SET(win32_resource_src "")
+
+# cmake doesn't support rc files on mingw:
+# http://www.cmake.org/Bug/view.php?id=4068
+#if(WIN32)
+#	if(MINGW)
+#		# resource compilation for mingw
+#		ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version_rc.o
+#			COMMAND ${WINDRES} -I${nvidia_ddraw_fix_SOURCE_DIR}
+#			-i${nvidia_ddraw_fix_SOURCE_DIR}/src/version.rc
+#			-o ${CMAKE_CURRENT_BINARY_DIR}/version_rc.o)
+#		SET(win32_resource_obj ${CMAKE_CURRENT_BINARY_DIR}/version_rc.o)
+#	else(MINGW)
+#		SET(win32_resource_src ${nvidia_ddraw_fix_SOURCE_DIR}/src/version.rc)
+#	endif(MINGW)
+#endif(WIN32)
+
+add_rc_file (version_info version.rc )
+message(STATUS ${win32_resource_obj})
+
 add_library( nvddf SHARED 
+	${version_info}
+	#	${win32_resource_obj}
+	#${win32_resource_src}
 	${SOURCES}
 	${HEADERS}
 	exports.def
 )
 
 target_link_libraries ( nvddf dxguid )
+
+add_subdirectory ( patcher )
+
