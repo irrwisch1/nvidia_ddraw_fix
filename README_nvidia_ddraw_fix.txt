@@ -18,7 +18,7 @@ This patch was primarily done for Planescape: Torment to avoid the mouse trail, 
 Note that often disabling HW acceleration gives _better_ performance. So this patch should _really_ be only used for games that don't
 work well with disabled HW acceleration or if you really get better performance with enabled hw acceleration.
 
-It has tested on the following games:
+It has been tested on the following games:
 
 Baldur's Gate (+TOSC) (need to patch BGMain2.exe)
 Icewind Dale 1
@@ -30,11 +30,11 @@ is far superior to DirectDraw.
 
 Description of the bug
 ======================
-Most people think that transparency is broken, but that's not true. What's actually broken in the nVidia driver is filling a surface
+For those who are curious what the actual bug in the nVidia driver is:
+Most people think that transparency is broken, but that's not true. What's actually broken is filling a surface
 with a constant color. This patch fixes that by simply doing the color fill in software.
 
-License
-===========
-
+Source Code
+===============
 This software is free software under the GPLv3. The source code is available at the following location:
 http://github.com/jlanger/nvidia_ddraw_fix/
