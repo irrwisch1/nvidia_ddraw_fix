@@ -49,7 +49,7 @@ static void load_ddraw_dll()
 	RealDirectDrawCreate = (pDirectDrawCreate)GetProcAddress(ddraw_handle, "DirectDrawCreate");
 }
 
-#ifdef DEBUG
+#ifdef _DEBUG
 //! allocate a console window for debugging purposes
 static void alloc_console()
 {
@@ -89,14 +89,14 @@ extern "C" BOOL WINAPI DllMain(HANDLE /*handle*/, DWORD reason, LPVOID  /*reserv
 	switch ( reason ) {
 		case DLL_PROCESS_ATTACH:
 			load_ddraw_dll();
-			#ifdef DEBUG
+			#ifdef _DEBUG
 			alloc_console();
 			#endif
 			break;
 		case DLL_PROCESS_DETACH:
 			if ( ddraw )
 				ddraw->Release();
-			#ifdef DEBUG
+			#ifdef _DEBUG
 			free_console();
 			#endif
 			FreeLibrary(ddraw_handle);

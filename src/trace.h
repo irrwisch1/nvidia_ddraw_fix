@@ -24,7 +24,7 @@
 extern std::ofstream outstream;
 //#define outstream std::cout
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	#define LOG_STDERR(X) std::cerr << X << std::endl;
 	#define LOG_FILE(X) outstream << X << std::endl;
 
