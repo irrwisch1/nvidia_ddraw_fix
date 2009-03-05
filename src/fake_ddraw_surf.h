@@ -36,7 +36,7 @@ void fill(T* ptr, const RECT& rect, T val, unsigned pitch)
 	for (int i = 0; i < rect.bottom - rect.top; ++i)
 		//for ( int j = 0; j < rect.right - rect.left; ++j)
 		//	ptr[i*p+j] = val;
-		std::fill( &ptr[i * p], &ptr[i * p + rect.right] - rect.left, val );
+		std::fill( &ptr[i * p], &ptr[i * p + rect.right - rect.left], val );
 }
 
 #pragma pack(push, 1)
