@@ -33,8 +33,10 @@ void fill(T* ptr, const RECT& rect, T val, unsigned pitch)
 {
 	const unsigned p = pitch / sizeof(T);
 
-	for (int i = rect.top; i < rect.bottom; ++i)
-		std::fill( &ptr[i * p + rect.left], &ptr[i * p + rect.right], val );
+	for (int i = 0; i < rect.bottom - rect.top; ++i)
+		//for ( int j = 0; j < rect.right - rect.left; ++j)
+		//	ptr[i*p+j] = val;
+		std::fill( &ptr[i * p], &ptr[i * p + rect.right] - rect.left, val );
 }
 
 #pragma pack(push, 1)
@@ -124,13 +126,21 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 			typename traits::surface_desc surf_desc;
 			surf_desc.dwSize = sizeof(typename traits::surface_desc);
 
-			// Note: the game freezes if I try to only lock the dest_rect region
-			// I don't know why this happens. Locking the whole surface doesn't freeze
-			// the game.
-			HRESULT res = refcounted_wrapper<T>::m_real->Lock(NULL, &surf_desc, DDLOCK_WRITEONLY, NULL);
+			HRESULT res = refcounted_wrapper<T>::m_real->Lock(dest_rect, &surf_desc, DDLOCK_WRITEONLY |DDLOCK_SURFACEMEMORYPTR, NULL);
 
 			if ( FAILED(res) ) {
-				LOG_STDERR("failed to lock surface");
+				const char* result;
+				switch ( res ) {
+					case DDERR_INVALIDOBJECT:   result = "DDERR_INVALIDOBJECT";   break;
+					case DDERR_INVALIDPARAMS:   result = "DDERR_INVALIDPARAMS";   break;
+					case DDERR_OUTOFMEMORY:     result = "DDERR_OUTOFMEMORY";     break;
+					case DDERR_SURFACEBUSY:     result = "DDERR_SURFACEBUSY";     break;
+					case DDERR_SURFACELOST:     result = "DDERR_SURFACELOST";     break;
+					case DDERR_WASSTILLDRAWING: result = "DDERR_WASSTILLDRAWING"; break;
+					default: result = "unknown error";
+				}
+
+				LOG_STDERR("failed to lock surface: " << result );
 				return res;
 			}
 			else {

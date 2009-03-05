@@ -1,0 +1,33 @@
+[33mcommit e5a48d456f9b2421f5108a96e3ed5ac39934e8b1[m
+Author: unknown <julien.langer@gmail.com>
+Date:   Wed Mar 4 17:39:06 2009 +0100
+
+    * removed some commented stuff
+    * fixed DEBUG and NDEBUG defines for MSVC
+    * added missing copyright header
+
+[33mcommit e235d1a309a336a125f76fc458e41819e1ba5eca[m
+Author: unknown <julien.langer@gmail.com>
+Date:   Tue Mar 3 23:16:18 2009 +0100
+
+    added windows version information via resource file
+
+[33mcommit 9480755631a038c1bfe976cc206d23de2518cdd3[m
+Author: unknown <julien.langer@gmail.com>
+Date:   Tue Mar 3 22:08:41 2009 +0100
+
+    compile with -Wall on gcc
+
+[33mcommit 7bd8b4d9382ef1eee13a22da577f5cdfe7f5425f[m
+Author: unknown <julien.langer@gmail.com>
+Date:   Tue Mar 3 22:02:52 2009 +0100
+
+    set the EXECUTABLE_OUTPUT_PATH in CMakeLists.txt
+
+[33mcommit 56cd6c4508acba4618a16aff0e2e96e576bc8ea2[m
+Author: unknown <julien.langer@gmail.com>
+Date:   Tue Mar 3 21:59:18 2009 +0100
+
+    forgot to check some files in
+
+[33mcommit 6ce57871dcd9783fe150adff3ef6516

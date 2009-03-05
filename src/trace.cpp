@@ -17,4 +17,7 @@
 */
 
 #include "trace.h"
+
+#ifdef _DEBUG
 std::ofstream outstream("c:\\bgddf_log.txt");
+#endif
