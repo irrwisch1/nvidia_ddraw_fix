@@ -16,4 +16,5 @@ CMakeCache.txt
 config.h
 *.layout
 *.o
+*.dll
 bin/
