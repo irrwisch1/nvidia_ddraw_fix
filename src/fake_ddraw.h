@@ -55,24 +55,23 @@ struct fake_ddraw_base : public refcounted_wrapper<T> {
 			return DD_OK;
 		}
 		else if ( riid == IID_IDirectDraw ) {
-			LOG_STDERR("requesting ddraw 1")
+			LOG("requesting ddraw 1")
 			return create_interface<IDirectDraw>(obp);
 		}
 		else if ( riid == IID_IDirectDraw2 ) {
-			LOG_STDERR("requesting ddraw 2")
+			LOG("requesting ddraw 2")
 			return create_interface<IDirectDraw2>(obp);
 		}
 		else if ( riid == IID_IDirectDraw4 ) {
-			LOG_STDERR("requesting ddraw 4")
+			LOG("requesting ddraw 4")
 			return create_interface<IDirectDraw4>(obp);
 		}
 		else if ( riid == IID_IDirectDraw7 ) {
-			LOG_STDERR("requesting ddraw 7")
+			LOG("requesting ddraw 7")
 			return create_interface<IDirectDraw7>(obp);
 		}
 		else {
 			show_error_box("unknown direct draw interface requested", MB_OK | MB_ICONERROR );
-			return DD_FALSE;
 		}
 	}
 

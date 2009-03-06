@@ -21,6 +21,11 @@ if (COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+OPTION(LOGGING
+	"enable logging build"
+	OFF
+)
+
 # override this with cmake -D CMAKE_BUILD_TYPE:STRING="Debug" CMakeLists.txt
 IF (NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
@@ -63,6 +68,9 @@ IF(MSVC)
      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
    ENDIF(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
    #ENDIF(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
+
+   # don't warn when using the C runtime
+   ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 ENDIF(MSVC)
 
 SET (GCC FALSE)
@@ -82,6 +90,10 @@ if (GCC OR NMAKE)
 		ADD_DEFINITIONS(-D_DEBUG)
 	endif (CMAKE_BUILD_TYPE MATCHES "Debug")
 endif (GCC OR NMAKE)
+
+if (LOGGING)
+	ADD_DEFINITIONS(-DNVIDIA_DDRAW_FIX_LOGGING)
+endif (LOGGING)
 
 INCLUDE (CheckIncludeFiles)
 INCLUDE( CheckFunctionExists )

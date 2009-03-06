@@ -26,6 +26,10 @@
 #include "ddraw_traits.h"
 #include "compat.h"
 
+// some debugging utils:
+//#define NVIDIA_DDRAW_FIX_PROFILE
+//#define NVIDIA_DDRAW_FIX_DUMP_SURFACES
+
 // Note: I really wonder where IDirectDrawSurface2 and 3 are used
 
 template<typename T>
@@ -39,7 +43,8 @@ void fill(T* ptr, const RECT& rect, T val, unsigned pitch)
 		std::fill( &ptr[i * p], &ptr[i * p + rect.right - rect.left], val );
 }
 
-#pragma pack(push, 1)
+#pragma pack(push)
+#pragma pack(1)
 template<size_t N>
 struct pix_packed {
 	uint8_t data[N / 8];
@@ -86,20 +91,19 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 			return DD_OK;
 		}
 		else if ( riid == IID_IDirectDrawSurface ) {
-			LOG_STDERR("requesting ddraw 1")
+			LOG("requesting ddraw surface 1")
 			return create_interface<IDirectDrawSurface>(obp);
 		}
 		else if ( riid == IID_IDirectDraw4 ) {
-			LOG_STDERR("requesting ddraw 4")
+			LOG("requesting ddraw surface 4")
 			return create_interface<IDirectDrawSurface4>(obp);
 		}
 		else if ( riid == IID_IDirectDraw7 ) {
-			LOG_STDERR("requesting ddraw 7")
+			LOG("requesting ddraw surface 7")
 			return create_interface<IDirectDrawSurface7>(obp);
 		}
 		else {
 			show_error_box("unknown direct draw surfacae interface requested", MB_OK | MB_ICONERROR );
-			return DD_FALSE;
 		}
 	}
 
@@ -122,11 +126,17 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 		// Note: the bug doesn't seem to happen with blits on the full surface (dest_rect == NULL)
 		// so as a small performance optimization we skip those blits
 		if ( dest_rect && flags & DDBLT_COLORFILL ) {
-
 			typename traits::surface_desc surf_desc;
 			surf_desc.dwSize = sizeof(typename traits::surface_desc);
 
-			HRESULT res = refcounted_wrapper<T>::m_real->Lock(dest_rect, &surf_desc, DDLOCK_WRITEONLY |DDLOCK_SURFACEMEMORYPTR, NULL);
+			HRESULT res = refcounted_wrapper<T>::m_real->Lock(dest_rect, &surf_desc, 
+				DDLOCK_WRITEONLY 
+				| DDLOCK_SURFACEMEMORYPTR 
+				//| DDLOCK_WAIT
+				#ifdef NVIDIA_DDRAW_FIX_DUMP_SURFACES
+				| DDLOCK_READONLY 
+				#endif
+				, NULL);
 
 			if ( FAILED(res) ) {
 				const char* result;
@@ -140,10 +150,21 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 					default: result = "unknown error";
 				}
 
-				LOG_STDERR("failed to lock surface: " << result );
+				LOG("failed to lock surface: " << result );
 				return res;
 			}
 			else {
+
+				#ifdef NVIDIA_DDRAW_FIX_DUMP_SURFACES
+				static int cnt = 0;
+				std::stringstream filename;
+				struct _stat statbuf;
+				filename << "c:\\surfaces\\" << cnt++ << "." << std::hex << surf_desc.lpSurface << std::dec << ".bmp";
+				write_bitmap(filename.str().c_str(), (unsigned char*)(surf_desc.lpSurface), 
+					dest_rect->right - dest_rect->left, dest_rect->bottom - dest_rect->top, surf_desc.ddpfPixelFormat.dwRGBBitCount / 8, 
+					surf_desc.lPitch);
+				#endif
+
 				#ifdef NVIDIA_DDRAW_FIX_PROFILE
 				LARGE_INTEGER t1, t2, fr;
 				QueryPerformanceCounter(&t1);

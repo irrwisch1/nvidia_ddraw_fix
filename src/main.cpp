@@ -135,9 +135,6 @@ DirectDrawCreate
 	*b = static_cast<IDirectDraw*>(ddraw);
 	ddraw->AddRef();
 	return 0;
-
-	//FNTRACE
-	//return DDrawCreate(a, b, c);
 }
 
 void show_error_box(const char* message, uint32_t flags)
@@ -169,4 +166,87 @@ std::string demangle(const char* name)
 	#else // MSVC doesn't mangle
 	return name;
 	#endif
+}
+
+#pragma pack(push)
+#pragma pack(1)
+typedef struct {
+  unsigned short signature;
+  unsigned int size;
+  unsigned int reserved;
+  unsigned int offset;
+} bmp_header_t;
+#pragma pack(pop)
+
+typedef struct {
+  unsigned int size;
+  int width;
+  int height;
+  unsigned short planes;
+  unsigned short bitcount;
+  unsigned int compression;
+  unsigned int sizeimage;
+  int xpelspermeter;
+  int ypelspermeter;
+  unsigned int clrused;
+  unsigned int clrimportant;
+} bmp_info_t;
+
+
+void write_bitmap(const char* filename, const unsigned char *m_data, unsigned m_width, unsigned m_height, unsigned m_bpp, unsigned src_stride)
+{
+  FILE *fp;
+  bmp_header_t header;
+  bmp_info_t info;
+
+  //int pitch = (m_width + 3) & ~3;  
+  int stride = (m_width * m_bpp + 3) & ~3;  
+
+  int tablesize = 0;
+  int imagesize = stride * m_height;
+
+ // if (m_bpp <= 1)
+ //   tablesize = sizeof(BMP8BitPalette::PaletteEntry) * (2<<(m_bpp*8-1));
+
+  info.size          = sizeof(bmp_info_t);
+  info.height        = -(int)m_height;
+  info.width         = m_width;
+  info.planes        = 1;
+  info.bitcount      = (short) m_bpp * 8;
+  info.compression   = 0;
+  info.sizeimage     = imagesize;
+  info.xpelspermeter = 0;
+  info.ypelspermeter = 0;
+  info.clrimportant  = 0; 
+  info.clrused       = 0;
+
+  header.signature   = 19778;
+  header.reserved    = 0;
+  header.offset      = sizeof(bmp_header_t) + sizeof(bmp_info_t) + tablesize;
+  header.size        = imagesize + header.offset;
+   
+  fp = fopen(filename, "wb");
+  fwrite(&header, sizeof(bmp_header_t), 1, fp);
+  fwrite(&info, sizeof(bmp_info_t), 1, fp);
+
+  //if (m_bpp <= 1)
+  //  fwrite(m_palette.m_colors, tablesize, 1, fp);
+
+  unsigned rw = m_width * m_bpp;
+  for (unsigned i = 0; i < m_height; ++i ) {
+	fwrite(m_data + i * src_stride, rw, 1, fp);
+
+	for (unsigned j = 0; j < stride - rw; ++j)
+		fputc(0, fp);
+	/*
+	int diff = src_stride - stride;
+	if ( diff > 0 ) {
+		for (unsigned j = 0; i < diff; ++i ) {
+			fputc(0,fp);
+		}
+	}
+	*/
+  }
+
+  fclose(fp);
 }

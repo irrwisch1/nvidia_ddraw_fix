@@ -19,12 +19,16 @@
 #ifndef TRACE_H
 #define TRACE_H
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(NVIDIA_DDRAW_FIX_LOGGING)
 #include <fstream>
 #include <iostream>
 extern std::ofstream outstream;
-//#define outstream std::cout
 
+#define LOG(X) outstream << X << std::endl;
+#endif
+
+//#define outstream std::cout
+#ifdef _DEBUG
 	//#define LOG_STDERR(X) std::cerr << X << std::endl;
 	#define LOG_STDERR(X) outstream << X << std::endl;
 	#define LOG_FILE(X) outstream << X << std::endl;

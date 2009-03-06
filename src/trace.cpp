@@ -18,6 +18,6 @@
 
 #include "trace.h"
 
-#ifdef _DEBUG
-std::ofstream outstream("c:\\bgddf_log.txt");
+#if defined(_DEBUG) || defined(NVIDIA_DDRAW_FIX_LOGGING)
+std::ofstream outstream("nvidia_ddraw_fix_log.txt");
 #endif

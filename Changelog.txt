@@ -1,0 +1,8 @@
+1.0.2
+  fixed a bug where the cursor wasn't blitted correcly, again due to failed surface locking
+
+1.0.1
+  fixed a bug that was causing some sprites to not get blitted correctly due to failed surface locking
+
+1.0.0
+  initial release

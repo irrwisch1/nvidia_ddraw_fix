@@ -37,4 +37,5 @@ extern void show_error_box(const char* message, uint32_t flags);
 /*! demangles a mangeled name */
 extern std::string demangle(const char* name);
 
+void write_bitmap(const char* filename, const unsigned char *m_data, unsigned m_width, unsigned m_height, unsigned m_bpp, unsigned src_stride);
 #endif
