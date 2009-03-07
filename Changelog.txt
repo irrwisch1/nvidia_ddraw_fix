@@ -1,3 +1,6 @@
+1.0.3
+  compiled with MSVC8 again, makes lot less trouble
+
 1.0.2
   fixed a bug where the cursor wasn't blitted correcly, again due to failed surface locking
 

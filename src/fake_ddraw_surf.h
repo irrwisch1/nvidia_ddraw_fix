@@ -30,6 +30,35 @@
 //#define NVIDIA_DDRAW_FIX_PROFILE
 //#define NVIDIA_DDRAW_FIX_DUMP_SURFACES
 
+#ifdef _DEBUG
+#define TEST_FLAG(F, FLAG) if ( F & FLAG ) LOG(#FLAG);
+static void print_blt_flags(DWORD flags)
+{
+	TEST_FLAG(flags, DDBLT_COLORFILL)
+	TEST_FLAG(flags, DDBLT_DDFX)
+	TEST_FLAG(flags, DDBLT_DDROPS)
+	TEST_FLAG(flags, DDBLT_DEPTHFILL)
+	TEST_FLAG(flags, DDBLT_KEYDESTOVERRIDE)
+	TEST_FLAG(flags, DDBLT_KEYSRCOVERRIDE)
+	TEST_FLAG(flags, DDBLT_ROP)
+	TEST_FLAG(flags, DDBLT_ROTATIONANGLE)
+	TEST_FLAG(flags, DDBLT_KEYDEST)
+	TEST_FLAG(flags, DDBLT_KEYSRC)
+	TEST_FLAG(flags, DDBLT_ASYNC)
+	TEST_FLAG(flags, DDBLT_DONOTWAIT)
+	TEST_FLAG(flags, DDBLT_WAIT)
+}
+
+static void print_bltfast_flags(DWORD flags)
+{
+	TEST_FLAG(flags, DDBLTFAST_DESTCOLORKEY)
+	TEST_FLAG(flags, DDBLTFAST_NOCOLORKEY)
+	TEST_FLAG(flags, DDBLTFAST_SRCCOLORKEY)
+	TEST_FLAG(flags, DDBLTFAST_WAIT)
+}
+#undef TEST_FLAG
+#endif
+
 // Note: I really wonder where IDirectDrawSurface2 and 3 are used
 
 template<typename T>
@@ -121,7 +150,12 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 
 	virtual HRESULT WINAPI Blt(LPRECT dest_rect, typename traits::surface_ptr src_surf, LPRECT src_rect, DWORD flags, LPDDBLTFX blt_fx)
 	{
-		FNTRACE
+		//FNTRACE
+
+		//	LOG("Blt");
+		//	print_blt_flags(flags);
+
+		// Only flags used in IWD2 appear to be DDBLT_COLORFILL, DDBLT_KEYSRC, DDBLT_DDFX
 
 		// Note: the bug doesn't seem to happen with blits on the full surface (dest_rect == NULL)
 		// so as a small performance optimization we skip those blits
@@ -132,7 +166,7 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 			HRESULT res = refcounted_wrapper<T>::m_real->Lock(dest_rect, &surf_desc, 
 				DDLOCK_WRITEONLY 
 				| DDLOCK_SURFACEMEMORYPTR 
-				//| DDLOCK_WAIT
+				| DDLOCK_WAIT
 				#ifdef NVIDIA_DDRAW_FIX_DUMP_SURFACES
 				| DDLOCK_READONLY 
 				#endif
@@ -222,12 +256,102 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 
 	virtual HRESULT WINAPI BltFast(DWORD x, DWORD y, typename traits::surface_ptr src_surf, LPRECT src_rect, DWORD trans)
 	{
-		FNTRACE
+		//FNTRACE
 
+#if 0
+		static typename traits::surface_ptr first_surf = src_surf;
+
+		fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(src_surf);
+		typename traits::surface_desc surf_desc;
+		surf_desc.dwSize = sizeof(typename traits::surface_desc);
+
+		HRESULT res = surf->refcounted_wrapper<T>::m_real->Lock(src_rect, &surf_desc, 
+			DDLOCK_SURFACEMEMORYPTR 
+			| DDLOCK_WAIT
+			| DDLOCK_READONLY 
+			, NULL);
+
+		if ( FAILED(res) ) {
+			const char* result;
+			switch ( res ) {
+				case DDERR_INVALIDOBJECT:   result = "DDERR_INVALIDOBJECT";   break;
+				case DDERR_INVALIDPARAMS:   result = "DDERR_INVALIDPARAMS";   break;
+				case DDERR_OUTOFMEMORY:     result = "DDERR_OUTOFMEMORY";     break;
+				case DDERR_SURFACEBUSY:     result = "DDERR_SURFACEBUSY";     break;
+				case DDERR_SURFACELOST:     result = "DDERR_SURFACELOST";     break;
+				case DDERR_WASSTILLDRAWING: result = "DDERR_WASSTILLDRAWING"; break;
+				default: result = "unknown error";
+			}
+
+			LOG("failed to lock surface: " << result );
+			return res;
+		}
+		else {
+			static int cnt = 0;
+			std::stringstream filename;
+			struct _stat statbuf;
+			filename << "c:\\surfaces\\" << cnt++ << "." << std::hex << surf_desc.lpSurface << std::dec << ".bmp";
+			write_bitmap(filename.str().c_str(), (unsigned char*)(surf_desc.lpSurface), 
+				src_rect->right - src_rect->left, src_rect->bottom - src_rect->top, surf_desc.ddpfPixelFormat.dwRGBBitCount / 8, 
+				surf_desc.lPitch);
+		}
+
+		surf->refcounted_wrapper<T>::m_real->Unlock(NULL);
+#endif
+		//LOG ("BltFast");
+		//print_bltfast_flags(trans);
+		// only SRCCOLORKEY appears to be ever used in IWD2
+		HRESULT hr;
+#if 0
+		DDBLTFX ddbltfx;
+		memset( &ddbltfx, 0, sizeof(DDBLTFX));
+		ddbltfx.dwSize = sizeof(DDBLTFX);
+		RECT dest_rect;
+		dest_rect.left = x;
+		dest_rect.top = y;
+		dest_rect.right = x + src_rect->right - src_rect->left;
+		dest_rect.bottom = y + src_rect->bottom - src_rect->top;
+
+		int flags = 0;
+		if (trans & DDBLTFAST_WAIT )
+			flags |= DDBLT_WAIT;
+		if ( trans & DDBLTFAST_DONOTWAIT )
+			flags |= DDBLT_DONOTWAIT;
+		if ( trans & DDBLTFAST_DESTCOLORKEY )
+			flags |= DDBLT_KEYDEST;
+		if ( trans & DDBLTFAST_SRCCOLORKEY )
+			flags |= DDBLT_KEYSRC;
+		if ( trans & DDBLTFAST_NOCOLORKEY )
+			LOG ("DDBLTFAST_NOCOLORKEY not implemented");
+		hr = Blt( &dest_rect, src_surf, src_rect, flags, &ddbltfx);
+#else
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(src_surf) )
-			return refcounted_wrapper<T>::m_real->BltFast(x, y, surf->m_real, src_rect, trans);
+			hr = refcounted_wrapper<T>::m_real->BltFast(x, y, surf->m_real, src_rect, trans);
 		else
-			return refcounted_wrapper<T>::m_real->BltFast(x, y, src_surf, src_rect, trans);
+			hr = refcounted_wrapper<T>::m_real->BltFast(x, y, src_surf, src_rect, trans);
+#endif
+#if 0
+		if (FAILED(hr)) {
+			const char* result;
+			switch ( hr ) {
+				case DDERR_EXCEPTION:       result = "DDERR_EXCEPTION";       break;
+				case DDERR_GENERIC:         result = "DDERR_GENERIC";         break;
+				case DDERR_INVALIDOBJECT:   result = "DDERR_INVALIDOBJECT";   break;
+				case DDERR_INVALIDPARAMS:   result = "DDERR_INVALIDPARAMS";   break;
+				case DDERR_INVALIDRECT:     result = "DDERR_INVALIDRECT";     break;
+				case DDERR_NOBLTHW:         result = "DDERR_NOBLTHW";         break;
+				case DDERR_OUTOFMEMORY:     result = "DDERR_OUTOFMEMORY";     break;
+				case DDERR_SURFACEBUSY:     result = "DDERR_SURFACEBUSY";     break;
+				case DDERR_SURFACELOST:     result = "DDERR_SURFACELOST";     break;
+				case DDERR_UNSUPPORTED:     result = "DDERR_UNSUPPORTED";     break;
+				case DDERR_WASSTILLDRAWING: result = "DDERR_WASSTILLDRAWING"; break;
+				default: result = "unknown error";
+			}
+
+			LOG( "BltFast failed: " << result << " " << hr )
+		}
+#endif
+		return hr;
 	}
 
 	virtual HRESULT WINAPI DeleteAttachedSurface(DWORD a, typename traits::surface_ptr b)
@@ -244,13 +368,14 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	virtual HRESULT WINAPI EnumOverlayZOrders(DWORD a, LPVOID b, typename traits::enum_surf_cb_ptr c)
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->EnumOverlayZOrders(a, b, c); }
 
-	virtual HRESULT WINAPI Flip(typename traits::surface_ptr a, DWORD b)
+	virtual HRESULT WINAPI Flip(typename traits::surface_ptr a, DWORD flags)
 	{
 		FNTRACE
+
 		if ( fake_ddraw_surf_base* surf = dynamic_cast<fake_ddraw_surf_base*>(a) )
-			return refcounted_wrapper<T>::m_real->Flip(surf->m_real, b);
+			return refcounted_wrapper<T>::m_real->Flip(surf->m_real, flags);
 		else
-			return refcounted_wrapper<T>::m_real->Flip(a, b);
+			return refcounted_wrapper<T>::m_real->Flip(a, flags);
 	}
 
 	virtual HRESULT WINAPI GetAttachedSurface(typename traits::caps_ptr a, typename traits::surface_ptr * b)
@@ -274,7 +399,7 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetClipper(a); }
 
 	virtual HRESULT WINAPI GetColorKey(DWORD a, LPDDCOLORKEY b)
-	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetColorKey(a, b); }
+	{ /*FNTRACE;*/ return refcounted_wrapper<T>::m_real->GetColorKey(a, b); }
 
 	virtual HRESULT WINAPI GetDC(HDC* a)
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->GetDC(a); }
@@ -301,7 +426,7 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->IsLost(); }
 
 	virtual HRESULT WINAPI Lock(LPRECT a, typename traits::surface_desc_ptr b, DWORD c, HANDLE d)
-	{ FNTRACE; return refcounted_wrapper<T>::m_real->Lock(a, b, c, d); }
+	{ /*FNTRACE;*/ return refcounted_wrapper<T>::m_real->Lock(a, b, c, d); }
 
 	virtual HRESULT WINAPI ReleaseDC(HDC a)
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->ReleaseDC(a); }
@@ -322,7 +447,7 @@ struct fake_ddraw_surf_base : public refcounted_wrapper<T> {
 	{ FNTRACE; return refcounted_wrapper<T>::m_real->SetPalette(a); }
 
 	virtual HRESULT WINAPI Unlock(typename traits::unlock_type a)
-	{ FNTRACE; return refcounted_wrapper<T>::m_real->Unlock(a); }
+	{ /*FNTRACE;*/ return refcounted_wrapper<T>::m_real->Unlock(a); }
 
 	virtual HRESULT WINAPI UpdateOverlay(LPRECT a, typename traits::surface_ptr b, LPRECT c, DWORD d, LPDDOVERLAYFX e)
 	{

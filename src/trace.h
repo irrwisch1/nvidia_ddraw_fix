@@ -24,7 +24,9 @@
 #include <iostream>
 extern std::ofstream outstream;
 
-#define LOG(X) outstream << X << std::endl;
+#define LOG(X) std::cout << X << std::endl;
+#else
+#define LOG(X)
 #endif
 
 //#define outstream std::cout

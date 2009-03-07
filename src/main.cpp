@@ -21,6 +21,7 @@
 #include <conio.h>
 #include <ddraw.h>
 #include <assert.h>
+#include <iostream>
 
 #if defined(__GNUC__)
 	#include <cxxabi.h>
