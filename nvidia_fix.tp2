@@ -1,0 +1,22 @@
+BACKUP ~nvidia_fix/backup~
+AUTHOR ~Eddy, WeiDU by The Bigg~
+
+README ~nvidia_fix/README_nvidia_ddraw_fix.txt~
+
+BEGIN ~Fix NVidia graphical glitches~
+ACTION_IF ENGINE_IS IWD2 THEN BEGIN
+	OUTER_SPRINT game_exe IWD2.EXE
+END ELSE ACTION_IF ENGINE_IS BG1 THEN BEGIN
+	OUTER_SPRINT game_exe bgmain.exe
+END ELSE ACTION_IF ENGINE_IS TotSC THEN BEGIN
+	OUTER_SPRINT game_exe bgmain2.exe
+END ELSE ACTION_IF ENGINE_IS PST THEN BEGIN
+	OUTER_SPRINT game_exe torment.exe
+END ELSE BEGIN
+	FAIL ~This patch is not needed on HoW, TotLM, SoA or ToB~
+END
+
+COPY ~%game_exe%~ ~%game_exe%~
+	REPLACE_TEXTUALLY ~ddraw.dll~ ~nvddf.dll~
+
+COPY ~nvidia_fix/nvddf.dll~ ~nvddf.dll~
